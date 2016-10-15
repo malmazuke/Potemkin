@@ -113,6 +113,7 @@ public class GrabTool : MonoBehaviour {
             currentGrabbedObject.transform.rotation = Quaternion.identity;
         } else {
             rb.AddForce (mouseMoveDelta * throwForce);
+            rb.AddTorque (throwForce);
         }
         
         isCurrentlyGrabbingObject = false;
