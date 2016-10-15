@@ -6,9 +6,10 @@ public class GrabTool : MonoBehaviour {
     #region Public Properties
     
     public bool isActive = false;
-    public float grabberHeight = 2.0f;
     public Rigidbody2D grabRB;
     public Transform hingePosition;
+    public float minimumThrowSpeed = 10.0f;
+    public float throwForce = 10.0f;
     
     #endregion
     
@@ -17,6 +18,14 @@ public class GrabTool : MonoBehaviour {
     private Camera mainCamera;
     private bool isCurrentlyGrabbingObject = false;
     private GameObject currentGrabbedObject;
+    private Vector2 mouseMoveDelta = Vector2.zero;
+    private Vector2 mouseLastPosition = Vector2.zero;
+    
+    private float mouseSpeed {
+        get {
+            return mouseMoveDelta.magnitude;
+        }
+    }
     
     #endregion
 	
@@ -38,7 +47,10 @@ public class GrabTool : MonoBehaviour {
         UpdateGrabberPosition ();
         
         if (Input.GetMouseButtonDown (0) && !isCurrentlyGrabbingObject) {
+            SetUpMousePosition ();
             AttemptToGrabObject ();
+        } else if (Input.GetMouseButton (0)) {
+            UpdateMouseSpeed ();
         } else if (Input.GetMouseButtonUp (0) && isCurrentlyGrabbingObject) {
             ReleaseObject ();
         }
@@ -47,6 +59,15 @@ public class GrabTool : MonoBehaviour {
     #endregion
     
     #region Private Methods
+    
+    private void SetUpMousePosition () {
+        mouseLastPosition = Input.mousePosition;
+    }
+    
+    private void UpdateMouseSpeed () {
+        mouseMoveDelta = (Vector2)Input.mousePosition - mouseLastPosition;
+        mouseLastPosition = Input.mousePosition;
+    }
     
     private void UpdateGrabberPosition () {
         Vector2 mousePosition = Input.mousePosition;
@@ -72,16 +93,29 @@ public class GrabTool : MonoBehaviour {
         
         HingeJoint2D hj = grabbedObject.GetComponent<HingeJoint2D> ();
         hj.autoConfigureConnectedAnchor = false;
+        hj.anchor = grabRB.transform.position;
         hj.connectedBody = grabRB;
         
         Rigidbody2D rb = grabbedObject.GetComponent<Rigidbody2D> ();
-        rb.gravityScale = 1.0f;        
+        rb.gravityScale = 1.0f;
+        
+        grabbedObject.layer = 9;
+        Physics2D.IgnoreLayerCollision (9, 10, true);
     }
     
     private void ReleaseObject () {
         Destroy (currentGrabbedObject.GetComponent<HingeJoint2D>());
         Rigidbody2D rb = currentGrabbedObject.GetComponent<Rigidbody2D> ();
         rb.gravityScale = 0.0f;
+        if (mouseSpeed < minimumThrowSpeed) {
+            currentGrabbedObject.layer = 0;
+            rb.velocity = Vector2.zero;
+            rb.angularVelocity = 0.0f;
+            currentGrabbedObject.transform.rotation = Quaternion.identity;
+        } else {
+            rb.AddForce (mouseMoveDelta * throwForce);
+        }
+        
         isCurrentlyGrabbingObject = false;
     }
     
