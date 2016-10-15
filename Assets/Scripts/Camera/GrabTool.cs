@@ -6,6 +6,7 @@ public class GrabTool : MonoBehaviour {
     #region Public Properties
     
     public bool isActive = false;
+    public float grabberHeight = 2.0f;
     public Rigidbody grabRB;
     public Transform hingePosition;
     
@@ -14,7 +15,6 @@ public class GrabTool : MonoBehaviour {
     #region Private Properties
     
     private Camera mainCamera;
-    private Vector3 oldClickPosition;
     private bool isCurrentlyGrabbingObject = false;
     private GameObject currentGrabbedObject;
     
@@ -23,7 +23,6 @@ public class GrabTool : MonoBehaviour {
 	#region Unity Methods
     
     void Start () {
-        oldClickPosition = Input.mousePosition;
         mainCamera = Camera.main;
     }
     
@@ -39,7 +38,6 @@ public class GrabTool : MonoBehaviour {
         UpdateGrabberPosition ();
         
         if (Input.GetMouseButtonDown (0) && !isCurrentlyGrabbingObject) {
-            oldClickPosition = Input.mousePosition;
             AttemptToGrabObject ();
         } else if (Input.GetMouseButtonUp (0) && isCurrentlyGrabbingObject) {
             ReleaseObject ();
@@ -51,12 +49,11 @@ public class GrabTool : MonoBehaviour {
     #region Private Methods
     
     private void UpdateGrabberPosition () {
-        Vector3 newClickPosition = Input.mousePosition;
-        Vector3 newPosition = mainCamera.transform.TransformDirection ((Vector3)((newClickPosition - oldClickPosition) * mainCamera.orthographicSize / mainCamera.pixelHeight * 2f));
-        newPosition.z += newPosition.y;
-        newPosition.y = 0.0f;
-        grabRB.transform.position += newPosition;
-        oldClickPosition = newClickPosition;
+        Vector3 mousePosition = Input.mousePosition;
+        Vector3 position = mainCamera.ScreenToWorldPoint (mousePosition);
+        position.z += position.y - grabberHeight;
+        position.y = grabberHeight;
+        grabRB.transform.position = position;
     }
     
     private void AttemptToGrabObject () {
@@ -72,17 +69,20 @@ public class GrabTool : MonoBehaviour {
     }
     
     private void PickUpObject (GameObject grabbedObject) {
+        currentGrabbedObject = grabbedObject;
+        isCurrentlyGrabbingObject = true;
+    
         grabbedObject.AddComponent<HingeJoint> ();
         grabbedObject.transform.position = hingePosition.position;
         
         HingeJoint hj = grabbedObject.GetComponent<HingeJoint> ();
-        hj.axis = new Vector3 (1.0f, 0.0f, 0.0f);
+        hj.axis = new Vector3 (0.0f, 1.0f, -1.0f);
         hj.connectedBody = grabRB;
-        
-        isCurrentlyGrabbingObject = true;
     }
     
     private void ReleaseObject () {
+        Destroy (currentGrabbedObject.GetComponent<HingeJoint>());
+    
         isCurrentlyGrabbingObject = false;
     }
     
