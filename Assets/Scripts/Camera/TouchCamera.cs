@@ -35,8 +35,6 @@ public class TouchCamera : MonoBehaviour {
 			else {
 				Vector2 newTouchPosition = Input.GetTouch(0).position;
 				Vector3 newPos = mainCamera.transform.TransformDirection((Vector3)((oldTouchPositions[0] - newTouchPosition) * mainCamera.orthographicSize / mainCamera.pixelHeight * 2f));
-                newPos.z += newPos.y;
-                newPos.y = 0;
 				mainCamera.transform.position += newPos;
 				
 				oldTouchPositions[0] = newTouchPosition;

@@ -7,7 +7,7 @@ public class GrabTool : MonoBehaviour {
     
     public bool isActive = false;
     public float grabberHeight = 2.0f;
-    public Rigidbody grabRB;
+    public Rigidbody2D grabRB;
     public Transform hingePosition;
     
     #endregion
@@ -49,22 +49,17 @@ public class GrabTool : MonoBehaviour {
     #region Private Methods
     
     private void UpdateGrabberPosition () {
-        Vector3 mousePosition = Input.mousePosition;
-        Vector3 position = mainCamera.ScreenToWorldPoint (mousePosition);
-        position.z += position.y - grabberHeight;
-        position.y = grabberHeight;
+        Vector2 mousePosition = Input.mousePosition;
+        Vector2 position = mainCamera.ScreenToWorldPoint (mousePosition);
         grabRB.transform.position = position;
     }
     
     private void AttemptToGrabObject () {
          Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-         RaycastHit hit;
+         RaycastHit2D hit = Physics2D.Raycast (ray.origin, ray.direction, Mathf.Infinity);
          
-         if(Physics.Raycast(ray, out hit))
-         {
-             if (hit.collider.tag == "GrabbableObject") {
-                PickUpObject (hit.transform.gameObject);
-             }
+         if (hit.collider != null && hit.collider.tag == "GrabbableObject") {
+            PickUpObject (hit.transform.gameObject);
          }
     }
     
@@ -72,17 +67,21 @@ public class GrabTool : MonoBehaviour {
         currentGrabbedObject = grabbedObject;
         isCurrentlyGrabbingObject = true;
     
-        grabbedObject.AddComponent<HingeJoint> ();
+        grabbedObject.AddComponent<HingeJoint2D> ();
         grabbedObject.transform.position = hingePosition.position;
         
-        HingeJoint hj = grabbedObject.GetComponent<HingeJoint> ();
-        hj.axis = new Vector3 (0.0f, 1.0f, -1.0f);
+        HingeJoint2D hj = grabbedObject.GetComponent<HingeJoint2D> ();
+        hj.autoConfigureConnectedAnchor = false;
         hj.connectedBody = grabRB;
+        
+        Rigidbody2D rb = grabbedObject.GetComponent<Rigidbody2D> ();
+        rb.gravityScale = 1.0f;        
     }
     
     private void ReleaseObject () {
-        Destroy (currentGrabbedObject.GetComponent<HingeJoint>());
-    
+        Destroy (currentGrabbedObject.GetComponent<HingeJoint2D>());
+        Rigidbody2D rb = currentGrabbedObject.GetComponent<Rigidbody2D> ();
+        rb.gravityScale = 0.0f;
         isCurrentlyGrabbingObject = false;
     }
     
