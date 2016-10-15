@@ -7,7 +7,6 @@ public class GrabTool : MonoBehaviour {
     
     public bool isActive = false;
     public Rigidbody2D grabRB;
-    public Transform hingePosition;
     public float minimumThrowSpeed = 10.0f;
     public float throwForce = 10.0f;
     
@@ -89,11 +88,11 @@ public class GrabTool : MonoBehaviour {
         isCurrentlyGrabbingObject = true;
     
         grabbedObject.AddComponent<HingeJoint2D> ();
-        grabbedObject.transform.position = hingePosition.position;
         
         HingeJoint2D hj = grabbedObject.GetComponent<HingeJoint2D> ();
         hj.autoConfigureConnectedAnchor = false;
-        hj.anchor = grabRB.transform.position;
+        hj.anchor = Vector2.zero;
+        hj.connectedAnchor = Vector2.zero;
         hj.connectedBody = grabRB;
         
         Rigidbody2D rb = grabbedObject.GetComponent<Rigidbody2D> ();
