@@ -5,6 +5,7 @@ public class TouchCamera : MonoBehaviour {
     #region Public Properties
     
     public Camera mainCamera;
+    public bool allowsZoomAndRotation = false;
     
     #endregion
     
@@ -33,13 +34,15 @@ public class TouchCamera : MonoBehaviour {
 			}
 			else {
 				Vector2 newTouchPosition = Input.GetTouch(0).position;
-				
-				mainCamera.transform.position += mainCamera.transform.TransformDirection((Vector3)((oldTouchPositions[0] - newTouchPosition) * mainCamera.orthographicSize / mainCamera.pixelHeight * 2f));
+				Vector3 newPos = mainCamera.transform.TransformDirection((Vector3)((oldTouchPositions[0] - newTouchPosition) * mainCamera.orthographicSize / mainCamera.pixelHeight * 2f));
+                newPos.z += newPos.y;
+                newPos.y = 0;
+				mainCamera.transform.position += newPos;
 				
 				oldTouchPositions[0] = newTouchPosition;
 			}
 		}
-		else {
+		else if (allowsZoomAndRotation) {
 			if (oldTouchPositions[1] == null) {
 				oldTouchPositions[0] = Input.GetTouch(0).position;
 				oldTouchPositions[1] = Input.GetTouch(1).position;
