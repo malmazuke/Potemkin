@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 using System.Collections;
 
 public class UFOTracker : MonoBehaviour {
@@ -6,13 +7,12 @@ public class UFOTracker : MonoBehaviour {
     #region Public Properties
     
     public UFOController ufo;
-    public GameObject cursorPrefab;
+    public Image cursorImage;
     
     #endregion
     
     #region Private Properties
     
-    GameObject cursor;
     Camera mainCamera;
     Vector2 UFOScreenPosition;
     
@@ -27,17 +27,13 @@ public class UFOTracker : MonoBehaviour {
     
 	#region Unity Methods
     
-    void Awake () {
-        CreateCursor ();
-    }
-    
     void Start () {
         mainCamera = Camera.main;
     }
     
 	void Update () {
 	    if (isUFOOnScreen) {
-            cursor.SetActive (false);
+            cursorImage.enabled = false;
         } else {
             UpdateCursorPosition ();
         }
@@ -47,14 +43,9 @@ public class UFOTracker : MonoBehaviour {
     
     #region Private Methods
     
-    void CreateCursor () {
-        cursor = Instantiate (cursorPrefab, Vector2.zero, Quaternion.identity) as GameObject;
-        cursor.SetActive (false);
-    }
-    
     void UpdateCursorPosition () {
-        if (!cursor.activeSelf) {
-            cursor.SetActive (true);
+        if (!cursorImage.isActiveAndEnabled) {
+            cursorImage.enabled = true;
         }
         
         // http://answers.unity3d.com/questions/1037969/arrows-pointing-to-offscreen-enemy.html
@@ -62,11 +53,11 @@ public class UFOTracker : MonoBehaviour {
         float max = Mathf.Max (Mathf.Abs (onScreenPos.x), Mathf.Abs (onScreenPos.y));
         onScreenPos = (onScreenPos / (max*2)) + new Vector2 (0.5f, 0.5f);
         
-        onScreenPos.x += (onScreenPos.x > 0.5f) ? -0.1f : 0.1f;
-        onScreenPos.y += (onScreenPos.y > 0.5f) ? -0.1f : 0.1f;
+        onScreenPos.x = 0.9f * onScreenPos.x + 0.05f;
+        onScreenPos.y = 0.9f * onScreenPos.y + 0.05f;
         
-        Vector2 screenPos = mainCamera.ViewportToWorldPoint (onScreenPos);
-        cursor.transform.position = screenPos;
+        Rect canvasRect = cursorImage.canvas.GetComponent<RectTransform> ().rect;
+        cursorImage.rectTransform.position = new Vector2 (canvasRect.width * onScreenPos.x, canvasRect.height * onScreenPos.y);
     }
     
     #endregion
