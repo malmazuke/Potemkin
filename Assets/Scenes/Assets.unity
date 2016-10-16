@@ -356,8 +356,9 @@ GameObject:
   - 224: {fileID: 1601799988}
   - 222: {fileID: 1601799990}
   - 114: {fileID: 1601799989}
+  - 95: {fileID: 1601799991}
   m_Layer: 5
-  m_Name: Image
+  m_Name: MessageTalker
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -414,6 +415,23 @@ CanvasRenderer:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1601799987}
+--- !u!95 &1601799991
+Animator:
+  serializedVersion: 3
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1601799987}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 5e1d14931d52b4ceb8bc953b5520cfcf, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
 --- !u!1 &1687278152
 GameObject:
   m_ObjectHideFlags: 0
@@ -500,7 +518,7 @@ GameObject:
   - 114: {fileID: 1750627155}
   - 114: {fileID: 1750627154}
   m_Layer: 5
-  m_Name: Canvas
+  m_Name: MessageDialog
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
