@@ -75,12 +75,15 @@ public class GrabTool : MonoBehaviour {
     }
     
     private void AttemptToGrabObject () {
-         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-         RaycastHit2D hit = Physics2D.Raycast (ray.origin, ray.direction, Mathf.Infinity);
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        RaycastHit2D hit = Physics2D.Raycast (ray.origin, ray.direction, Mathf.Infinity);
          
-         if (hit.collider != null && hit.collider.tag == "GrabbableObject") {
-            PickUpObject (hit.transform.gameObject);
-         }
+        if (hit.collider != null) {
+            ObjectController oc = hit.transform.gameObject.GetComponent<ObjectController> ();
+            if (oc != null && oc.isGrabbable) {
+                PickUpObject (hit.transform.gameObject);
+            }
+        }
     }
     
     private void PickUpObject (GameObject grabbedObject) {

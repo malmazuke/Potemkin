@@ -16,13 +16,14 @@ public class UFOController : MonoBehaviour {
     public float verticalFloatingMagnitide = 0.03f;
     public float verticalFloatingSpeed = 5.0f;
     public float movementSpeed = 1.0f;
-    public float phaseLength = 1.0f;
+    public float stateLength = 1.0f;
     
     #endregion
     
     #region Private Properties
     
     bool isExecutingState = false;
+    bool isCurrentlyDisgusted = false;
     
     #endregion
 
@@ -32,9 +33,29 @@ public class UFOController : MonoBehaviour {
         Oscillate ();
         
 	    if (!isExecutingState) {
-            StartCoroutine (PerformState (nextState, phaseLength));
+            StartCoroutine (PerformState (nextState, stateLength));
         }
 	}
+    
+    void OnTriggerEnter2D (Collider2D other) {
+        ObjectController oc = other.GetComponent<ObjectController> ();
+        
+        if (oc == null) {
+            return;
+        }
+        
+        CheckIfDisgustedWithObject (oc);
+    }
+    
+    void OnTriggerStay2D (Collider2D other) {
+        ObjectController oc = other.GetComponent<ObjectController> ();
+        
+        if (oc == null) {
+            return;
+        }
+        
+        CheckIfDisgustedWithObject (oc);
+    }
     
     #endregion
     
@@ -44,12 +65,12 @@ public class UFOController : MonoBehaviour {
         transform.localPosition = new Vector2 (transform.localPosition.x, Mathf.Sin (Time.time * verticalFloatingSpeed) * verticalFloatingMagnitide);
     }
     
-    IEnumerator PerformState (UFOState phase, float lengthInSeconds) {
+    IEnumerator PerformState (UFOState state, float lengthInSeconds) {
         isExecutingState = true;
-        currentState = phase;
-        float phaseRemaining = 0.0f;
+        currentState = state;
+        float stateRemaining = 0.0f;
         
-        while (phaseRemaining < lengthInSeconds) {
+        while (stateRemaining < lengthInSeconds) {
             switch (currentState) {
                 case UFOState.Stopped:
                     break;
@@ -61,7 +82,7 @@ public class UFOController : MonoBehaviour {
                     break;
             }
             
-            phaseRemaining += Time.deltaTime;
+            stateRemaining += Time.deltaTime;
             yield return null;
         }
         
@@ -75,6 +96,21 @@ public class UFOController : MonoBehaviour {
     
     void Move () {
         transform.position = Vector2.MoveTowards (transform.position, (Vector2)transform.position + new Vector2 (1.0f, 0.0f), movementSpeed * Time.deltaTime);
+    }
+    
+    void CheckIfDisgustedWithObject (ObjectController objectController) {
+        if (objectController.isABadThing && !isCurrentlyDisgusted) {
+            StartCoroutine (GetDisgusted (objectController, stateLength));
+        }
+    }
+    
+    IEnumerator GetDisgusted (ObjectController objectController, float lengthInSeconds) {
+        isCurrentlyDisgusted = true;
+        
+        Debug.Log ("Is currently disgusted with " + objectController.name);
+        yield return new WaitForSeconds ((int)lengthInSeconds);
+        
+        isCurrentlyDisgusted = false;
     }
     
     #endregion
