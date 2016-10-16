@@ -26,6 +26,12 @@ public class GrabTool : MonoBehaviour {
         }
     }
     
+    private Vector2 touchPosition {
+        get {
+            return Input.touchCount == 1 ? Input.GetTouch (0).position : (Vector2)Input.mousePosition;
+        }
+    }
+    
     #endregion
 	
 	#region Unity Methods
@@ -45,12 +51,12 @@ public class GrabTool : MonoBehaviour {
         
         UpdateGrabberPosition ();
         
-        if (Input.GetMouseButtonDown (0) && !isCurrentlyGrabbingObject) {
+        if (IsTappingOrMouseDown () && !isCurrentlyGrabbingObject) {
             SetUpMousePosition ();
             AttemptToGrabObject ();
-        } else if (Input.GetMouseButton (0)) {
+        } else if (IsDraggingOrButtonDown ()) {
             UpdateMouseSpeed ();
-        } else if (Input.GetMouseButtonUp (0) && isCurrentlyGrabbingObject) {
+        } else if (IsEndingTapOrMouseClick () && isCurrentlyGrabbingObject) {
             ReleaseObject ();
         }
 	}
@@ -59,23 +65,69 @@ public class GrabTool : MonoBehaviour {
     
     #region Private Methods
     
+    private bool IsTappingOrMouseDown () {
+        bool isTapping = false;
+        
+        if (Input.touchCount == 1) {
+            Touch touch = Input.GetTouch (0);
+            if (touch.phase == TouchPhase.Began) {
+                isTapping = true;
+            }
+        } else if (Input.GetMouseButtonDown (0)) {
+            isTapping = true;
+        }
+        
+        return isTapping;
+    }
+    
+    private bool IsDraggingOrButtonDown () {
+        bool isTapping = false;
+        
+        if (Input.touchCount == 1) {
+            Touch touch = Input.GetTouch (0);
+            if (touch.phase == TouchPhase.Stationary || touch.phase == TouchPhase.Moved) {
+                isTapping = true;
+            }
+        } else if (Input.GetMouseButton (0)) {
+            isTapping = true;
+        }
+        
+        return isTapping;
+    }
+    
+    private bool IsEndingTapOrMouseClick () {
+        bool isTappingEnding = false;
+        
+        if (Input.touchCount == 1) {
+            Touch touch = Input.GetTouch (0);
+            if (touch.phase == TouchPhase.Ended) {
+                isTappingEnding = true;
+            }
+        } else if (Input.GetMouseButtonUp (0)) {
+            isTappingEnding = true;
+        }
+        
+        return isTappingEnding;
+    }
+    
     private void SetUpMousePosition () {
-        mouseLastPosition = Input.mousePosition;
+        mouseLastPosition = touchPosition;
     }
     
     private void UpdateMouseSpeed () {
-        mouseMoveDelta = (Vector2)Input.mousePosition - mouseLastPosition;
-        mouseLastPosition = Input.mousePosition;
+        Vector2 mousePosition = touchPosition;
+        mouseMoveDelta = mousePosition - mouseLastPosition;
+        mouseLastPosition = mousePosition;
     }
     
     private void UpdateGrabberPosition () {
-        Vector2 mousePosition = Input.mousePosition;
+        Vector2 mousePosition = touchPosition;
         Vector2 position = mainCamera.ScreenToWorldPoint (mousePosition);
         grabRB.transform.position = position;
     }
     
     private void AttemptToGrabObject () {
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        Ray ray = Camera.main.ScreenPointToRay(touchPosition);
         RaycastHit2D hit = Physics2D.Raycast (ray.origin, ray.direction, Mathf.Infinity);
          
         if (hit.collider != null) {
